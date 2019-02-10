@@ -1,5 +1,5 @@
 {
-  "name": "watcher",
+  "name": "js-watcher",
   "version": "1.0.0",
   "description": "A JS watcher implementation for objects, arrays, literals",
   "main": "proxy.js",
