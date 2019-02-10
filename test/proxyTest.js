@@ -1,5 +1,6 @@
 const assert = require('chai').assert
 const proxy = require('../proxy')
+const _ = require('lodash')
 
 describe('Watcher Implementation With Proxy', function () {
   describe('Arrays', function () {
@@ -127,7 +128,8 @@ describe('Watcher Implementation With Proxy', function () {
         valueChangeCallback: () => { vcbCalled = true },
         orderChangeCallback: () => { ocbCalled = true }
       }
-      let p = proxy.createProxy(a, cbs, (prev, next) => {
+      let p = proxy.createProxy(a, cbs, (prev, next, path) => {
+        assert.deepEqual(_.get(a, path), prev)
         if (prev === 'abc' && next === 'xyz') {
           return false
         }
@@ -224,7 +226,7 @@ describe('Watcher Implementation With Proxy', function () {
       vcbCalled = false
     })
 
-    it('Nested Objects Checker', function () {
+    it('Nested Objects', function () {
       let o = {
         a: 1,
         b: 2
@@ -275,7 +277,8 @@ describe('Watcher Implementation With Proxy', function () {
         valueChangeCallback: () => { vcbCalled = true },
         keyInsertionCallback: () => { kcbCalled = true }
       }
-      let p = proxy.createProxy(o, cbs, (prev, next) => {
+      let p = proxy.createProxy(o, cbs, (prev, next, path) => {
+        assert.deepEqual(_.get(o, path), prev)
         if (prev === 'abc' && next === 'xyz') {
           return false
         }
@@ -309,11 +312,23 @@ describe('Watcher Implementation With Proxy', function () {
       assert.isFalse(vcbCalled)
       assert.deepEqual(o, { a: 1, b: 2, c: { a: '1', b: '2' } })
       vcbCalled = false
+
+      p.c.a = {b: [0,1,2,{d: 'aaa'}]}
+      assert.isFalse(kcbCalled)
+      assert.isTrue(vcbCalled)
+      assert.deepEqual(o, { a: 1, b: 2, c: { a: {b: [0,1,2,{d: 'aaa'}]}, b: '2' } })
+      vcbCalled = false
+
+      p.c.a.b[3].d = 'bbb'
+      assert.isFalse(kcbCalled)
+      assert.isTrue(vcbCalled)
+      assert.deepEqual(o, { a: 1, b: 2, c: { a: {b: [0,1,2,{d: 'bbb'}]}, b: '2' } })
+      vcbCalled = false
     })
   })
 
   describe('String/Number Literals', function () {
-    it('Simple Number Checker', function () {
+    it('Simple Numbers', function () {
       let l = 5
       let vcbCalled = false
       let cbs = {
@@ -327,7 +342,7 @@ describe('Watcher Implementation With Proxy', function () {
       vcbCalled = false
     })
 
-    it('Simple String Checker', function () {
+    it('Simple Strings', function () {
       let l = 'abc'
       let vcbCalled = false
       let cbs = {
