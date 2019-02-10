@@ -49,8 +49,8 @@ function createProxy (o, cbs, shouldComponentUpdate) {
   throw new Error('Creation of proxy failed: unknown type')
 }
 
-function getCorrectPathOfObject(target, prop) {
-  if(! (target instanceof Array || target instanceof Object)) {
+function getCorrectPathOfObject (target, prop) {
+  if (!(target instanceof Array || target instanceof Object)) {
     return ''
   }
   return (target instanceof Array ? `[${prop}]` : `.${prop}`)
@@ -65,11 +65,11 @@ function assignProxies (obj, cbs, shouldComponentUpdate, parent) {
       obj[k] = assignProxies(obj[k], cbs, shouldComponentUpdate, curPosition + key)
     }
   }
-  if(obj instanceof Array || obj instanceof Object) {
-    Object.defineProperty(obj, "_parent", {
+  if (obj instanceof Array || obj instanceof Object) {
+    Object.defineProperty(obj, '_parent', {
       enumerable: false,
       writable: true
-    });
+    })
     obj._parent = parent
   }
   if (obj instanceof Array) {
@@ -81,9 +81,9 @@ function assignProxies (obj, cbs, shouldComponentUpdate, parent) {
   }
 }
 
-function trim(path) {
-  if(path.length > 0) {
-    if(path.charAt(0) === '.') {
+function trim (path) {
+  if (path.length > 0) {
+    if (path.charAt(0) === '.') {
       return path.slice(1)
     }
     return path

@@ -313,16 +313,16 @@ describe('Watcher Implementation With Proxy', function () {
       assert.deepEqual(o, { a: 1, b: 2, c: { a: '1', b: '2' } })
       vcbCalled = false
 
-      p.c.a = {b: [0,1,2,{d: 'aaa'}]}
+      p.c.a = { b: [0, 1, 2, { d: 'aaa' }] }
       assert.isFalse(kcbCalled)
       assert.isTrue(vcbCalled)
-      assert.deepEqual(o, { a: 1, b: 2, c: { a: {b: [0,1,2,{d: 'aaa'}]}, b: '2' } })
+      assert.deepEqual(o, { a: 1, b: 2, c: { a: { b: [0, 1, 2, { d: 'aaa' }] }, b: '2' } })
       vcbCalled = false
 
       p.c.a.b[3].d = 'bbb'
       assert.isFalse(kcbCalled)
       assert.isTrue(vcbCalled)
-      assert.deepEqual(o, { a: 1, b: 2, c: { a: {b: [0,1,2,{d: 'bbb'}]}, b: '2' } })
+      assert.deepEqual(o, { a: 1, b: 2, c: { a: { b: [0, 1, 2, { d: 'bbb' }] }, b: '2' } })
       vcbCalled = false
     })
   })
