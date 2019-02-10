@@ -38,6 +38,20 @@ Will print:
 1 -> -1; path: a.o[0]
 `
 
+If you want to prevent assignment of the same value to the object,
+you can use comparison in shouldComponentUpdate method.
+
+```javascript
+proxy = require('js-watcher')
+b = {a:{o:[1,2,3]}}
+x = proxy.createProxy(b, {}, (prev, next, path) => { if(prev === next) return false; console.log('hello') })
+x.a.o[0] = 1
+x.a.o[0] = -1
+``` 
+
+Will print (once):
+`hello`
+
 ## More
 
 To test the implementation run: `npm test`
