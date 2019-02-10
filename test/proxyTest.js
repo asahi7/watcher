@@ -118,6 +118,37 @@ describe('Watcher Implementation With Proxy', function() {
       assert.deepEqual(a, [{a:[{b:'xyz'}]},2,3])
       vcbCalled = false
     })
+
+    it('shouldComponentUpdate', function() {
+      let a = [{a:[{b:'abc'}]},2,3]
+      let vcbCalled = false
+      let ocbCalled = false
+      p = proxy.createProxy(a, () => {
+        vcbCalled = true
+      }, () => {}, () => {
+        ocbCalled = true
+      }, (prev, next) => {
+        if(prev === 'abc' && next === 'xyz') {
+          return false
+        }
+        return true
+      })
+
+      p[0].a[0].b = 'xyz'
+      assert.isFalse(vcbCalled)
+      assert.deepEqual(a, [{a:[{b:'abc'}]},2,3])
+      vcbCalled = false
+
+      p[0].a[0].b = 'efg'
+      assert.isTrue(vcbCalled)
+      assert.deepEqual(a, [{a:[{b:'efg'}]},2,3])
+      vcbCalled = false
+
+      p[0].a[0].c = 'xyz'
+      assert.isFalse(vcbCalled)
+      assert.deepEqual(a, [{a:[{b:'efg', c: 'xyz'}]},2,3])
+      vcbCalled = false
+    });
   });
 
   describe('Objects', function() {
@@ -235,6 +266,50 @@ describe('Watcher Implementation With Proxy', function() {
       assert.deepEqual(o, {a:1, b:2, c:[{d: 3, e: ['xyz']}]})
       vcbCalled = false
     })
+
+    it('shouldComponentUpdate', function() {
+      let o = {a:1, b:2, c:[{d: 3, e: ['abc']}]}
+      let vcbCalled = false
+      let kcbCalled = false
+      p = proxy.createProxy(o, () => {
+        vcbCalled = true
+      }, () => {
+        kcbCalled = true
+      }, () => {}, (prev, next) => {
+        if(prev === 'abc' && next === 'xyz') {
+          return false
+        }
+        let obj = {a: '1', b: '2'}
+        if(JSON.stringify(prev) === JSON.stringify(obj) && next === null) {
+          return false
+        }
+        return true
+      })
+
+      p.c[0].e[0] = 'xyz'
+      assert.isFalse(kcbCalled)
+      assert.isFalse(vcbCalled)
+      assert.deepEqual(o, {a:1, b:2, c:[{d: 3, e: ['abc']}]})
+      vcbCalled = false
+
+      p.c[0].e[0] = 'efg'
+      assert.isFalse(kcbCalled)
+      assert.isTrue(vcbCalled)
+      assert.deepEqual(o, {a:1, b:2, c:[{d: 3, e: ['efg']}]})
+      vcbCalled = false
+
+      p.c = {a: '1', b: '2'}
+      assert.isFalse(kcbCalled)
+      assert.isTrue(vcbCalled)
+      assert.deepEqual(o, {a:1, b:2, c:{a: '1', b: '2'}})
+      vcbCalled = false
+
+      p.c = null
+      assert.isFalse(kcbCalled)
+      assert.isFalse(vcbCalled)
+      assert.deepEqual(o, {a:1, b:2, c:{a: '1', b: '2'}})
+      vcbCalled = false
+    });
   });
 
   describe('String/Number Literals', function() {
@@ -263,6 +338,30 @@ describe('Watcher Implementation With Proxy', function() {
       p.v = 'xyz'
       assert.isTrue(vcbCalled)
       assert.deepEqual(l, 'xyz')
+      vcbCalled = false
+    });
+
+    it('shouldComponentUpdate', function() {
+      let l = 'abc'
+      let vcbCalled = false
+      p = proxy.createProxy(l, (valueTo) => {
+        vcbCalled = true
+        l = valueTo
+      }, () => {}, () => {}, (prev, next) => {
+        if(prev === 'abc' && next === 'xyz') {
+          return false
+        }
+        return true
+      })
+
+      p.v = 'xyz'
+      assert.isFalse(vcbCalled)
+      assert.deepEqual(l, 'abc')
+      vcbCalled = false
+
+      p.v = 'efg'
+      assert.isTrue(vcbCalled)
+      assert.deepEqual(l, 'efg')
       vcbCalled = false
     });
   });
