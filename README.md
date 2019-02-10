@@ -1,4 +1,4 @@
-# Watcher JS
+# JS Watcher
 
 ## Overview
 
@@ -10,7 +10,7 @@ library is for you.
 ## Run
 
 ```javascript
-proxy = require('./proxy')
+proxy = require('js-watcher')
 a = {a:'1', b:[1,2,3]}
 p = proxy.createProxy(a, { valueChangeCallback: () => {console.log('hello')} })
 p.a = 2
@@ -21,7 +21,7 @@ Will print:
 `
 
 ```javascript
-proxy = require('./proxy')
+proxy = require('js-watcher')
 b = {a:{o:[1,2,3]}}
 x = proxy.createProxy(b, {}, (prev, next, path) => { console.log(prev + ' -> ' + next + '; path: ' + path)})
 x.a.o[0] = -1
