@@ -7,6 +7,12 @@ A JS watcher implementation for objects, arrays, literals
 If you need to catch every change made on your JS variables, this
 library is for you. 
 
+## Install
+
+`npm i js-watcher` in your npm project directory.
+
+The npm package is located [here](https://www.npmjs.com/package/js-watcher)
+
 ## Run
 
 ```javascript
