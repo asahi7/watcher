@@ -7,14 +7,28 @@
  **/
 
 // TODO(aibek): substitute some of parameters with an object
-function createProxy (o, valueChangeCallback, keyInsertionCallback, orderChangeCallback, shouldComponentUpdate) {
+function createProxy (o, cbs, shouldComponentUpdate) {
+  if (!cbs) {
+    cbs = {}
+  }
+  if (!cbs.valueChangeCallback) {
+    cbs.valueChangeCallback = () => {}
+  }
+  if (!cbs.keyInsertionCallback) {
+    cbs.keyInsertionCallback = () => {}
+  }
+  if (!cbs.orderChangeCallback) {
+    cbs.orderChangeCallback = () => {}
+  }
   if (!shouldComponentUpdate) {
     shouldComponentUpdate = () => true
   }
   if (o instanceof Array) {
-    return assignProxies(o, valueChangeCallback, () => {}, orderChangeCallback, shouldComponentUpdate)
+    cbs.keyInsertionCallback = () => {}
+    return assignProxies(o, cbs, shouldComponentUpdate)
   } else if (o instanceof Object) {
-    return assignProxies(o, valueChangeCallback, keyInsertionCallback, () => {}, shouldComponentUpdate)
+    cbs.orderChangeCallback = () => {}
+    return assignProxies(o, cbs, shouldComponentUpdate)
   } else if (o instanceof String || o instanceof Number || typeof (o) === 'number' || typeof (o) === 'string') {
     return new Proxy([o], {
       get (target, prop) {
@@ -26,7 +40,7 @@ function createProxy (o, valueChangeCallback, keyInsertionCallback, orderChangeC
         if (shouldComponentUpdate(target[0], value) === false) {
           return false
         }
-        valueChangeCallback(value)
+        cbs.valueChangeCallback(value)
         target[0] = value
         return true
       }
@@ -36,23 +50,23 @@ function createProxy (o, valueChangeCallback, keyInsertionCallback, orderChangeC
 }
 
 // TODO(aibek): add a graph of nested objects
-function assignProxies (obj, valueChangeCallback, keyInsertionCallback, orderChangeCallback, shouldComponentUpdate) {
+function assignProxies (obj, cbs, shouldComponentUpdate) {
   for (let k in obj) {
     if (obj[k] instanceof Array || obj[k] instanceof Object) {
-      obj[k] = assignProxies(obj[k], valueChangeCallback, keyInsertionCallback, orderChangeCallback, shouldComponentUpdate)
+      obj[k] = assignProxies(obj[k], cbs, shouldComponentUpdate)
     }
   }
   if (obj instanceof Array) {
-    return makeArrayProxy(obj, valueChangeCallback, orderChangeCallback, shouldComponentUpdate)
+    return makeArrayProxy(obj, cbs, shouldComponentUpdate)
   } else if (obj instanceof Object) {
-    return makeObjectProxy(obj, valueChangeCallback, keyInsertionCallback, shouldComponentUpdate)
+    return makeObjectProxy(obj, cbs, shouldComponentUpdate)
   } else {
     return obj
   }
 }
 
 // TODO(aibek): notify user on array's order change, also on nested objects.
-function makeArrayProxy (arr, valueChangeCallback, orderChangeCallback, shouldComponentUpdate) {
+function makeArrayProxy (arr, cbs, shouldComponentUpdate) {
   return new Proxy(arr, {
     get (target, prop) {
       if (prop in target) { return target[prop] }
@@ -63,16 +77,16 @@ function makeArrayProxy (arr, valueChangeCallback, orderChangeCallback, shouldCo
         return false
       }
       if (value instanceof Array || value instanceof Object) {
-        value = assignProxies(value, valueChangeCallback, () => {}, orderChangeCallback, shouldComponentUpdate)
+        value = assignProxies(value, cbs, shouldComponentUpdate)
       }
       target[prop] = value
-      valueChangeCallback()
+      cbs.valueChangeCallback()
       return true
     }
   })
 }
 
-function makeObjectProxy (obj, valueChangeCallback, keyInsertionCallback, shouldComponentUpdate) {
+function makeObjectProxy (obj, cbs, shouldComponentUpdate) {
   return new Proxy(obj, {
     get (target, prop) {
       if (prop in target) { return target[prop] }
@@ -83,12 +97,12 @@ function makeObjectProxy (obj, valueChangeCallback, keyInsertionCallback, should
         return false
       }
       if (!(prop in target)) {
-        keyInsertionCallback()
+        cbs.keyInsertionCallback()
       } else {
-        valueChangeCallback()
+        cbs.valueChangeCallback()
       }
       if (value instanceof Array || value instanceof Object) {
-        value = assignProxies(value, valueChangeCallback, keyInsertionCallback, () => {}, shouldComponentUpdate)
+        value = assignProxies(value, cbs, shouldComponentUpdate)
       }
       target[prop] = value
       return true

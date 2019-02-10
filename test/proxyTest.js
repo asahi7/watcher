@@ -7,11 +7,11 @@ describe('Watcher Implementation With Proxy', function () {
       let a = [1, 2, 3]
       let vcbCalled = false
       let ocbCalled = false
-      let p = proxy.createProxy(a, () => {
-        vcbCalled = true
-      }, () => {}, () => {
-        ocbCalled = true
-      })
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        orderChangeCallback: () => { ocbCalled = true }
+      }
+      let p = proxy.createProxy(a, cbs)
 
       p[0] = -1
       assert.isTrue(vcbCalled)
@@ -48,11 +48,11 @@ describe('Watcher Implementation With Proxy', function () {
       let a = [1, 2, 3]
       let vcbCalled = false
       let ocbCalled = false
-      let p = proxy.createProxy(a, () => {
-        vcbCalled = true
-      }, () => {}, () => {
-        ocbCalled = true
-      })
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        orderChangeCallback: () => { ocbCalled = true }
+      }
+      let p = proxy.createProxy(a, cbs)
 
       p[0] = [4, 5]
       assert.isTrue(vcbCalled)
@@ -86,11 +86,11 @@ describe('Watcher Implementation With Proxy', function () {
       let a = [1, 2, 3]
       let vcbCalled = false
       let ocbCalled = false
-      let p = proxy.createProxy(a, () => {
-        vcbCalled = true
-      }, () => {}, () => {
-        ocbCalled = true
-      })
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        orderChangeCallback: () => { ocbCalled = true }
+      }
+      let p = proxy.createProxy(a, cbs)
 
       p[0] = { a: [{ b: 'abc' }] }
       assert.isTrue(vcbCalled)
@@ -107,11 +107,11 @@ describe('Watcher Implementation With Proxy', function () {
       let a = [{ a: [{ b: 'abc' }] }, 2, 3]
       let vcbCalled = false
       let ocbCalled = false
-      let p = proxy.createProxy(a, () => {
-        vcbCalled = true
-      }, () => {}, () => {
-        ocbCalled = true
-      })
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        orderChangeCallback: () => { ocbCalled = true }
+      }
+      let p = proxy.createProxy(a, cbs)
 
       p[0].a[0].b = 'xyz'
       assert.isTrue(vcbCalled)
@@ -123,11 +123,11 @@ describe('Watcher Implementation With Proxy', function () {
       let a = [{ a: [{ b: 'abc' }] }, 2, 3]
       let vcbCalled = false
       let ocbCalled = false
-      let p = proxy.createProxy(a, () => {
-        vcbCalled = true
-      }, () => {}, () => {
-        ocbCalled = true
-      }, (prev, next) => {
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        orderChangeCallback: () => { ocbCalled = true }
+      }
+      let p = proxy.createProxy(a, cbs, (prev, next) => {
         if (prev === 'abc' && next === 'xyz') {
           return false
         }
@@ -159,11 +159,11 @@ describe('Watcher Implementation With Proxy', function () {
       }
       let vcbCalled = false
       let kcbCalled = false
-      let p = proxy.createProxy(o, () => {
-        vcbCalled = true
-      }, () => {
-        kcbCalled = true
-      }, () => {})
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        keyInsertionCallback: () => { kcbCalled = true }
+      }
+      let p = proxy.createProxy(o, cbs)
 
       p.a = 3
       assert.isTrue(vcbCalled)
@@ -231,11 +231,11 @@ describe('Watcher Implementation With Proxy', function () {
       }
       let vcbCalled = false
       let kcbCalled = false
-      let p = proxy.createProxy(o, () => {
-        vcbCalled = true
-      }, () => {
-        kcbCalled = true
-      }, () => {})
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        keyInsertionCallback: () => { kcbCalled = true }
+      }
+      let p = proxy.createProxy(o, cbs)
 
       p.c = [{ d: 3, e: ['abc'] }]
       assert.isFalse(vcbCalled)
@@ -254,11 +254,11 @@ describe('Watcher Implementation With Proxy', function () {
       let o = { a: 1, b: 2, c: [{ d: 3, e: ['abc'] }] }
       let vcbCalled = false
       let kcbCalled = false
-      let p = proxy.createProxy(o, () => {
-        vcbCalled = true
-      }, () => {
-        kcbCalled = true
-      }, () => {})
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        keyInsertionCallback: () => { kcbCalled = true }
+      }
+      let p = proxy.createProxy(o, cbs)
 
       p.c[0].e[0] = 'xyz'
       assert.isFalse(kcbCalled)
@@ -271,11 +271,11 @@ describe('Watcher Implementation With Proxy', function () {
       let o = { a: 1, b: 2, c: [{ d: 3, e: ['abc'] }] }
       let vcbCalled = false
       let kcbCalled = false
-      let p = proxy.createProxy(o, () => {
-        vcbCalled = true
-      }, () => {
-        kcbCalled = true
-      }, () => {}, (prev, next) => {
+      let cbs = {
+        valueChangeCallback: () => { vcbCalled = true },
+        keyInsertionCallback: () => { kcbCalled = true }
+      }
+      let p = proxy.createProxy(o, cbs, (prev, next) => {
         if (prev === 'abc' && next === 'xyz') {
           return false
         }
@@ -316,10 +316,10 @@ describe('Watcher Implementation With Proxy', function () {
     it('Simple Number Checker', function () {
       let l = 5
       let vcbCalled = false
-      let p = proxy.createProxy(l, (valueTo) => {
-        vcbCalled = true
-        l = valueTo
-      }, () => {}, () => {})
+      let cbs = {
+        valueChangeCallback: (valueTo) => { vcbCalled = true; l = valueTo }
+      }
+      let p = proxy.createProxy(l, cbs)
 
       p.v = 3
       assert.strictEqual(l, 3)
@@ -330,10 +330,10 @@ describe('Watcher Implementation With Proxy', function () {
     it('Simple String Checker', function () {
       let l = 'abc'
       let vcbCalled = false
-      let p = proxy.createProxy(l, (valueTo) => {
-        vcbCalled = true
-        l = valueTo
-      }, () => {}, () => {})
+      let cbs = {
+        valueChangeCallback: (valueTo) => { vcbCalled = true; l = valueTo }
+      }
+      let p = proxy.createProxy(l, cbs)
 
       p.v = 'xyz'
       assert.isTrue(vcbCalled)
@@ -344,10 +344,10 @@ describe('Watcher Implementation With Proxy', function () {
     it('shouldComponentUpdate', function () {
       let l = 'abc'
       let vcbCalled = false
-      let p = proxy.createProxy(l, (valueTo) => {
-        vcbCalled = true
-        l = valueTo
-      }, () => {}, () => {}, (prev, next) => {
+      let cbs = {
+        valueChangeCallback: (valueTo) => { vcbCalled = true; l = valueTo }
+      }
+      let p = proxy.createProxy(l, cbs, (prev, next) => {
         if (prev === 'abc' && next === 'xyz') {
           return false
         }
